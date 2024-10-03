@@ -4,11 +4,11 @@ import { Route, Routes, Link, NavLink, useNavigate } from 'react-router-dom';
 import { FaSearch } from "react-icons/fa";
 import { IoIosHome } from "react-icons/io";
 import { AiFillThunderbolt } from "react-icons/ai";
-import { LuAlarmClock } from "react-icons/lu";
 import { FaShoppingCart } from "react-icons/fa";
 import { FaLessThan } from "react-icons/fa";
 import { IoMdMenu } from "react-icons/io";
 import { FaArrowCircleUp } from "react-icons/fa";
+import { useLocation } from 'react-router-dom';
 
 import chair1 from './chair1.jpg'
 import chair2 from './chair2.jpg'
@@ -191,7 +191,7 @@ import laptop1 from './laptop.png'
 
 function App() {
   let image = [phone1,airpords1,battery1,head_phone1,monitor1,laptop_charger1,chair1,clock1,watch1,shoe1,laptopbattery2,pen1,pant1,light1,mouse2];
-  let having_items = ["waterbottle","tshirt","powerbank","shoes","pant","watch","pen","table","mouse","clock","charger","phone","airpords","headphone","light","monitor","battery","tops","chair","keyboard","tab","laptop"]
+  let having_items = ["waterbottle","tshirt","powerbank","shoes","pant","watch","pen","table","mouse","clock","mobilecharger","phone","airpords","headphone","light","monitor","battery","tops","chair","keyboard","tab","laptop","laptopcharger"]
 
   let clock = [
     {
@@ -806,6 +806,11 @@ function App() {
   const [images,setimgaes] = useState()
   const navigate = useNavigate();
   const [cartitem,setcartitem] = useState([])
+  const location = useLocation();
+  const [name,setname] = useState("");
+  const [add,setadd] = useState("");
+  const [contact,setcontact] = useState("");
+  const [land,setland] = useState("");
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -829,17 +834,30 @@ function App() {
 
   function left_click(){
     setstop(false)
-    setcount(count - 1);
+
+    if(count <= 0){
+      setcount(1)
+    }
+    else{
+      setcount(count - 1);
+    }
+
     setTimeout(()=>{
       setstop(true)
       setcount(count)
     },2000)
-    setinput("hellow")
   }
   
   function right_click(){
     setstop(false)
-    setcount(count + 1);
+
+    if(count == image.length-1){
+      setcount(image.length-1)
+    }
+    else{
+      setcount(count + 1);
+    }
+
     setTimeout(()=>{
       setstop(true)
       setcount(count)
@@ -850,6 +868,8 @@ function App() {
   function get_click_imgae_1(){
     let b = image[count]
     setimgaes(b)
+    console.log(b);
+    navigate("/show")
   }
 
   function get_click_imgae_2(e){
@@ -868,9 +888,9 @@ function App() {
   }
 
   function get_input(e){
-    console.log(e.target.value);
-    setinput(e.target.value)
-    let chart = e.target.value
+    console.log(e.target.value.toLowerCase());
+    setinput(e.target.value.toLowerCase())
+    let chart = e.target.value.toLowerCase()
     if(chart != ""){
       set_display_search("search_display_block")
     }
@@ -933,7 +953,9 @@ function App() {
   }
 
   function gohome(){
+    setmenu("menu_display_none")
     navigate("/")
+    console.log(location.pathname);//used to print a current loaction
   }
 
   function add_item_to_add_to_cart(){
@@ -947,6 +969,51 @@ function App() {
     console.log(cartitem);
   },[cartitem])
 
+
+  function show_cart_items(){
+    if(cartcount == 0){
+      navigate("/")
+      alert("No items in cart")
+    }
+    else{
+      navigate("/show_cart_items")
+    }
+  }
+
+  function delete_item_click(e){
+      setcartcount(cartcount-1)
+      console.log(e);
+      let a = cartitem.filter((item,index)=>{
+        if(item != e){
+          return item
+        }
+      })
+      setcartitem(a)
+  }
+
+  useEffect(()=>{
+    if(cartcount == 0){
+      navigate("/")
+    }
+  },[cartcount])
+
+  function cart_image_click(e){
+    setimgaes(e)
+    navigate("/show")
+  }
+  useEffect(()=>{
+    console.log("n"+name);
+    console.log("a"+add);
+    console.log("c"+contact);
+    console.log("L"+land);
+  },[name,add,contact,land])
+
+  function user_detail_click(){
+    if((name != "") && (add != "") && (contact != "") && (land != "")){
+      alert("order placed")
+      navigate("/")
+    }
+  }
   return (
     <div className="App">
       <div className="dark_mode">
@@ -970,21 +1037,18 @@ function App() {
 
       <div className="nav">
         <ul>
-          <li>
+          <li onClick={()=>{navigate("/")}}>
             HOME <IoIosHome />
           </li>
-          <li>
+          <li onClick={()=>{window.scrollTo({top:600,behavior:"smooth"})}}>
             ORDER NOW <AiFillThunderbolt />
           </li>
-          <li>
-            DEALS OF THE DAY <LuAlarmClock />
-          </li>
-          <li>
+          <li onClick={show_cart_items}>
             CART <FaShoppingCart />
           </li>
           <li>
             <input type="text" value={input} onChange={get_input} />
-            <FaSearch className="zoom" onClick={searchs}/>
+            <FaSearch className="zoom" onClick={searchs} />
           </li>
         </ul>
       </div>
@@ -993,7 +1057,9 @@ function App() {
         <div className={display_search}>
           <ul>
             {search.map((item, index) => (
-              <li key={index} onClick={ ()=> get_list_click(item)}>{item}</li>
+              <li key={index} onClick={() => get_list_click(item)}>
+                {item}
+              </li>
             ))}
           </ul>
         </div>
@@ -1002,12 +1068,12 @@ function App() {
       <div className="nav_mobile">
         <ul>
           <li>
-            <FaShoppingCart className="cart_mobile" />
+            <FaShoppingCart className="cart_mobile" onClick={show_cart_items} />
           </li>
           <li className="cart_count">{cartcount}</li>
           <li>
             <input type="text" value={input} onChange={get_input} />
-            <FaSearch className="zoom" onClick={searchs}/>
+            <FaSearch className="zoom" onClick={searchs} />
           </li>
           <li>
             <IoMdMenu
@@ -1025,7 +1091,11 @@ function App() {
         <div>
           <div className={menu}>
             <ul>
-              <li>ORDER NOW</li>
+              <li onClick={()=>{
+                window.scrollTo({top:600,behavior:"smooth"})
+                setmenu("menu_display_none")
+                }
+                }>ORDER NOW</li>
               <li onClick={gohome}>HOME</li>
             </ul>
           </div>
@@ -1046,54 +1116,148 @@ function App() {
         </div>
       </div>
       <div className="content">
-
         <Routes>
-
           <Route
             path="/"
             element={
               <div className="div">
-                {
-                images_show.map((image, index) => (
+                {images_show.map((image, index) => (
                   <React.Fragment key={index}>
-                    <div className="index" onClick={get_click_imgae_2}>
-                      <img src={image.src} />
+                    <div className="index">
+                      <img src={image.src} onClick={get_click_imgae_2}/>
                       <p className="des">{image.desc}</p>
                     </div>
                   </React.Fragment>
-                ))
-                }
+                ))}
               </div>
             }
           />
-          <Route path = '/show' element = {
-            <div className='outer_element_1'>
-              <img src = {images} />
-              <div className='buy_now'>buy now</div>
-              <div className='Add_To_Cart' onClick={add_item_to_add_to_cart}>Add to cart</div>
-              <div className='paragraph'>
-                <h3>Description</h3>
-                <p>Lorem, ipsum dolor sit amet consectetur Lorem, ipsum dolor sit amet consectetur adipisicing elit. Accusantium minus, possimus repudiandae a odio deleniti beatae aperiam! Amet, placeat exercitationem. adipisicing elit. Facere laborum reprehenderit distinctio facilis aperiam provident ipsam quia et quam quos!</p>
+          <Route
+            path="/show"
+            element={
+              <div className="outer_element_1">
+                <div className="outer_element_11">
+                  <img src={images} />
+
+                  <div className="buy_add">
+                    <div className="buy_now" onClick={()=>{navigate("/get_user_details")}}>buy now</div>
+                    <div
+                      className="Add_To_Cart"
+                      onClick={add_item_to_add_to_cart}
+                    >
+                      Add to cart
+                    </div>
+                  </div>
+                </div>
+
+                <div className="paragraph">
+                  <h3>Description</h3>
+                  <p>
+                    Lorem, ipsum dolor sit amet consectetur Lorem, ipsum dolor
+                    sit amet consectetur adipisicing elit. Accusantium minus,
+                    possimus repudiandae a odio deleniti beatae aperiam! Amet,
+                    placeat exercitationem. adipisicing elit. Facere laborum
+                    reprehenderit distinctio facilis aperiam provident ipsam
+                    quia et quam quos!
+                  </p>
+                </div>
               </div>
-            </div>
-          }/>
-          <Route path='/show_searched_item' element = {
-            <div className='outer_element_2'>
-            {
-              amma.map( (item,index) => (
-                <React.Fragment key={index}>
-                  <img src = {item.source} onClick={()=>get_searched_image_clicked_image(item.source)}/>
-                </React.Fragment>
-              ))
             }
-            </div>
-            }/>
-            <Route path='/show_cart_items' element = {
-              <div></div>
-            }/>
+          />
+          <Route
+            path="/show_searched_item"
+            element={
+              <div className="outer_element_2">
+                {amma.map((item, index) => (
+                  <React.Fragment key={index}>
+                    <img
+                      src={item.source}
+                      onClick={() =>
+                        get_searched_image_clicked_image(item.source)
+                      }
+                    />
+                  </React.Fragment>
+                ))}
+              </div>
+            }
+          />
+          <Route
+            path="/show_cart_items"
+            element={
+              <div className="cart_item_show_outer">
+                <div className="cart_item_show_inner">
+                  {cartitem.map((item, index) => (
+                    <React.Fragment key={index}>
+                      <div className="cart_item_border" key={index}>
+                        <img
+                          src={item}
+                          key={index}
+                          className="cart_images"
+                          alt=""
+                          onClick={() => {
+                            cart_image_click(item);
+                          }}
+                        />
+                        <div
+                          className="delete_item_button"
+                          onClick={() => {
+                            delete_item_click(item);
+                          }}
+                        >
+                          Delete Item
+                        </div>
+                      </div>
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+            }
+          />
 
+          <Route
+            path="/get_user_details"
+            element={
+              <div className="user_details_outer">
+
+                <div className="user_details_inner">
+
+                  <form>
+                    <div>
+                      <label htmlFor="name">Enter the Full Name</label>
+                      <br />
+                      <input value={name} type="text" id="name" required onChange={(e)=>{setname(e.target.value) }}/>
+                    </div>
+
+                    <div>
+                      <label htmlFor="address">Address</label>
+                      <br />
+                      <textarea value={add} id="address" required onChange={(e)=>{setadd(e.target.value)}}></textarea>
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="contact">Contact</label>
+                      <br />
+                      <input value={contact} type="text" id='contact' maxLength={10} required onChange={(e)=>{setcontact(e.target.value)}}/>
+                    </div>
+
+                    <div>
+                      <label htmlFor="landmark">Land mark</label>
+                      <br />
+                      <input value={land} type="text" id="landmark" required onChange={(e)=>{setland(e.target.value)}}/>
+                    </div>
+
+                    <div className='user_detail_button'>
+                    <button type='submit' onClick={user_detail_click}>Place Your Order</button>
+                    </div>
+
+                  </form>
+
+                </div>
+
+              </div>
+            }
+          />
         </Routes>
-
       </div>
       <div>
         <FaArrowCircleUp className="up_arrow" onClick={go_top} />
